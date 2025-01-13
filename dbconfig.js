@@ -1,7 +1,7 @@
 const mongoose=require("mongoose");
 async function callDb(){
     try{
-        const mongoUri='mongodb://127.0.0.1:27017/Shop'
+        const mongoUri='mongodb+srv://shopDB:shopDB@vinayak.g0lxnfc.mongodb.net/?retryWrites=true&w=majority&appName=Vinayak/shopDB'
        const isConnected=await mongoose.connect(mongoUri);
        if(!isConnected){
         throw new Error("failde")
