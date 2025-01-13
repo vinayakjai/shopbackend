@@ -20,7 +20,7 @@ callDb();
 app.use(router);
 app.use('/stock',stockRouter);
 app.use('/cart',cartRouter);
-app.listen(3100,()=>{
+app.listen(3100,"0.0.0.0",()=>{
     console.log(`server is listening on http://localhost:${3100}`);
 
 })
