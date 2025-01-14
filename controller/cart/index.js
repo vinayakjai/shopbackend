@@ -24,13 +24,14 @@ async function createCart(req,res){
 async function addToCart(req,res){
     try{
     const {productName,price,quantity,weight,weightInBill}=req.body;
-    if(!productName,!price,!quantity,!weight || !weightInBill){
+    const {name}=req.params;
+    if(!productName,!price,!quantity,!weight || !weightInBill || !name){
         return res.status(404).json({
            success:false,
            message:"please provide required information",
         })
     }
-    const cart=await Cart.findOne({});
+    const cart=await Cart.findOne({name});
     if(cart){
         cart.items.push({name:productName,price,weight,quantity,weightInBill});
         await cart.save();
@@ -47,13 +48,36 @@ async function addToCart(req,res){
     }
 }
 
-async function deleteCart(req,res){
+async function deleteCartItems(req,res){
     try{
+        const {name}=req.params;
+        if(!name){
+            return res.status(404).json({
+                success:false,
+                message:"please provide name of the cart",
+            })
+        }
+
+        const cart=await Cart.findOne({name});
+        if(!cart){
+            return res.status(404).json({
+                success:false,
+                message:`unable to cart of ${name}`
+            })
+        }
+        cart.items=[];
+        await cart.save();
+
+        return res.status(201).json({
+            success:true,
+            message:"cart items deleted successfully",
+        })
+
      
     }catch(error){
         return res.json({
             success:false,
-            message:"unable to delete cart",
+            message:"unable to delete cart Items",
         })
     }
 }
@@ -61,13 +85,14 @@ async function deleteCart(req,res){
 async function deleteItem(req,res){
     try{
         const {productName,price,quantity,weight}=req.body;
-        if(!productName,!price,!quantity,!weight){
+        const {name}=req.params;
+        if(!productName || !price || !quantity || !weight || !name){
             return res.status(404).json({
                success:false,
                message:"please provide required information",
             })
         }
-        const cart=await Cart.findOne({});
+        const cart=await Cart.findOne({name});
         let targetIndexOfProduct=null;
 
         let cartProducts = cart.items;
@@ -100,13 +125,14 @@ async function deleteItem(req,res){
 async function updateQuantity(req,res){
     try{
         const {productName,price,updatedQuantity,weight}=req.body;
-        if(!productName,!price,!updatedQuantity,!weight){
+        const {name}=req.params;
+        if(!productName || !price || !updatedQuantity || !weight || !name){
             return res.status(404).json({
                success:false,
                message:"please provide required information",
             })
         }
-        const cart=await Cart.findOne({});
+        const cart=await Cart.findOne({name});
 
         cart.items.map((product)=>{
             if(product.name==productName && product.weight==weight){
@@ -166,5 +192,7 @@ module.exports={
     addToCart,
     deleteItem,
     updateQuantity,
-    getCart
+    getCart,
+    deleteCartItems
 }
+
