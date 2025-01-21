@@ -10,6 +10,7 @@ const productSchema = new Schema({
       price: { type: Number, required: true },
       weight: { type: Number, required: true },
       weightInBill:{type:String,required:true},
+      sodexo_rate:{type:Number,required:true}
     },
    
   ],

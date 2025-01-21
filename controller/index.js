@@ -5,6 +5,8 @@ async function createProduct(req, res) {
   try {
     const productInfo = req.body;
     //console.log(productInfo);
+    
+    
 
     const isProductCreated = await Product.create(productInfo);
     if (isProductCreated) {
@@ -191,15 +193,15 @@ async function updateMinimum_Sel_Rate(req, res) {
 
 async function addNewWeightItemOgGivenProduct(req, res) {
   try {
-    const { productName, weight, price } = req.body;
-    if (!productName || !weight || !price) {
+    const { productName, weight, price,sodexo_rate,weightInBill } = req.body;
+    if (!productName || !weight || !price || !sodexo_rate || !weightInBill) {
       return res.json({
         message: "please provide required information",
       });
     }
     const isAdded = await Product.updateOne(
       { name: productName },
-      { $push: { info: { weight, price } } }
+      { $push: { info: { weight, price,sodexo_rate,weightInBill } } }
     );
     if (isAdded) {
       return res.json({
@@ -247,6 +249,9 @@ async function updatePriceOfGivenWeight(req, res) {
     });
   }
 }
+
+
+
 
 
 module.exports = {

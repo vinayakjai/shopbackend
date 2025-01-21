@@ -176,13 +176,16 @@ async function getCart(req,res){
         })
     }
     let totalPrice=0;
+    let totalCount=cart.items.length;
     for(i=0;i<cart.items.length;i++){
         totalPrice=totalPrice+(cart.items[i].price*cart.items[i].quantity);
     }
     return res.status(201).json({
         success:true,
         totalPrice,
+        totalCount,
         items:cart.items,
+
         name:cart.name
     })
 }

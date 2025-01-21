@@ -70,7 +70,7 @@ async function findStockOfGivenProduct(req,res){
 
 async function updateStockOfProducts(req,res){
     const {products}=req.body;
-    console.log(products)
+ 
     /**
      * products:[
      *      {
@@ -115,15 +115,15 @@ async function updateStockOfProducts(req,res){
             success:false,
             message:"unable to update stock due to db related issue"
           })
-        } else {
-           return res.status(201).json({
-            success:true,
-            message:"updated stock successfully",
-           })
-        }
+        } 
+          
+        
       }
 
-
+      return res.status(201).json({
+        success:true,
+        message:"updated stock successfully",
+       })
   
 }
 
