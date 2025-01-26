@@ -53,33 +53,31 @@ async function findMinimalStock(req, res) {
     */
     console.log("he");
 
-    
     const products = await Stock.find({}); // Fetch all products
 
     // Filter products based on the criteria
-    const lowStockItems=[];
-    products.map((product)=>{
-      if(product.varients=="true"){
-        product.product_varients.map((varient)=>{
-          if(varient.current_stock<=varient.minimum_stock_signal){
+    const lowStockItems = [];
+    products.map((product) => {
+      if (product.varients == "true") {
+        product.product_varients.map((varient) => {
+          if (varient.current_stock <= varient.minimum_stock_signal) {
             lowStockItems.push({
-              name:product.name,
-              current_stock:varient.current_stock,
-              weightOfProduct:varient.weightOfProduct
-            })
+              name: product.name,
+              current_stock: varient.current_stock,
+              weightOfProduct: varient.weightOfProduct,
+            });
           }
-        })
-      }else{
-        if(product.current_stock<=product.minimum_stock_signal){
+        });
+      } else {
+        if (product.current_stock <= product.minimum_stock_signal) {
           lowStockItems.push({
-            name:product.name,
-            current_stock:product.current_stock
-
-          })
+            name: product.name,
+            current_stock: product.current_stock,
+          });
         }
       }
-    })
-    
+    });
+
     if (!lowStockItems) {
       console.log("wj");
       return res.status(404).json({
@@ -157,49 +155,33 @@ async function updateStockOfProducts(req, res) {
         message: "please provide products to update stock",
       });
     }
-
-    for (const item of products) {
-      const { name, weight, quantity } = item;
-
-      // Fetch the product to determine if it has variants
-      const product = await Stock.findOne({ name });
-
-      if (!product) {
-        console.log(`Product ${name} not found.`);
-        continue;
-      }
-
-      if (product.varients == "true" && product.product_varients.length > 0) {
-        // Case 1: Product has variants, deduct stock from all variants equally
-        let varient = product.product_varients.find((item) => {
-          return item.weightOfProduct == weight;
-        });
-        console.log(varient);
-
-        varient.current_stock = varient.current_stock - weight * quantity;
-        await product.save();
-      } else {
-        // Case 2: Product without variants, deduct stock from the main product
-        console.log("without varient");
-        const result = await Stock.updateOne(
-          { name },
-          {
-            $inc: { current_stock: -(weight * quantity) }, // Deduct from main product stock
+    
+  for (const product of products) {
+    const stock_product=await Stock.findOne({name:product.name})
+    if (stock_product.varients === "true") {
+      // Loop through product variants and update stock
+      await Stock.updateOne(
+        {
+          name: product.name, 
+          "product_varients": { 
+            $elemMatch: { weightOfProduct: product.weight} // Explicitly match the variant by weight
           }
-        );
-        console.log(result);
-
-        if (result) {
-          console.log(`Updated stock for product.`);
-        } else {
-          return res.status(404).json({
-            success: false,
-            message: error,
-          });
+        },
+        { 
+          $inc: { "product_varients.$.current_stock": -(product.weight*product.quantity) } // Deduct quantity from the variant's stock
         }
-      }
+      );
+    } else {
+      // Update main product's stock
+      await Stock.updateOne(
+        { name: product.name },
+        { $inc: { current_stock: -(product.weight*product.quantity) } }
+      );
     }
-
+  }
+  
+     
+    
     return res.status(201).json({
       success: true,
       message: "stock updated Successfully",
@@ -247,7 +229,7 @@ async function findTodayStockConsumption(req, res) {
 }
 
 async function updateTodayStartStock(req, res) {
-  await Stock.updateMany({varients:"false"}, [
+  await Stock.updateMany({ varients: "false" }, [
     { $set: { today_start_stock: "$current_stock" } },
   ]);
 
@@ -255,15 +237,14 @@ async function updateTodayStartStock(req, res) {
     success: true,
     message: "updated today_start_stock to its initial state",
   });
-
 }
 
-async function getAllStocks(req,res){
-  const product_stocks=await Stock.find({});
+async function getAllStocks(req, res) {
+  const product_stocks = await Stock.find({});
   return res.status(201).json({
-    success:true,
-    product_stocks
-  })
+    success: true,
+    product_stocks,
+  });
 }
 
 module.exports = {
