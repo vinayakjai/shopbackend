@@ -10,6 +10,6 @@ async function callDb(){
        console.log(error)
     }
 }
-//mongodb://localhost:27017
+//mongodb://localhost:27017/Shop
 //'mongodb+srv://shopDB:shopDB@vinayak.g0lxnfc.mongodb.net/shopDB'
 module.exports=callDb;

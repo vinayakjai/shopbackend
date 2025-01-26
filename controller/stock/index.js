@@ -1,136 +1,259 @@
 const Stock = require("../../model/stock_model");
-async function addProductToStock(req,res){
-    const {productName,current_stock,minimum_stock_signal}=req.body;
-    if(!productName || !current_stock || !minimum_stock_signal){
-        return res.status(404).json({
-            success:false,
-            message:"please provide required information",
-        })
-    }
+const schedule = require("node-schedule");
+async function addProductToStock(req, res) {
+  const {
+    productName,
+    current_stock,
+    minimum_stock_signal,
+    unit,
+    varients,
+    product_varients,
+  } = req.body;
+  console.log(req.body);
+  if (
+    !productName ||
+    !current_stock ||
+    !minimum_stock_signal ||
+    !unit ||
+    !varients
+  ) {
+    return res.status(404).json({
+      success: false,
+      message: "please provide required information",
+    });
+  }
 
-    const isStockOfProductAdded=await Stock.create({name:productName,current_stock,minimum_stock_signal});
-    if(isStockOfProductAdded){
-        return res.status(201).json({
-            success:true,
-            message:"stock of product added successfully",
-        })
-    }else{
-        return res.status(404).json({
-            success:false,
-            message:"unable to add stock of product",
-        })
-    }
+  const isStockOfProductAdded = await Stock.create({
+    name: productName,
+    current_stock,
+    minimum_stock_signal,
+    today_start_stock: current_stock,
+    unit,
+    varients,
+    product_varients,
+  });
+  if (isStockOfProductAdded) {
+    return res.status(201).json({
+      success: true,
+      message: "stock of product added successfully",
+    });
+  } else {
+    return res.status(404).json({
+      success: false,
+      message: "unable to add stock of product",
+    });
+  }
 }
-async function findMinimalStock(req,res){
-
-    const lowStockItems = await Stock.find({
-        $expr: { $lte: ["$current_stock", "$minimum_stock_signal"] }, // Compare weight and minimum fields
-      });
-
-      if(!lowStockItems){
-        return res.status(404).json({
-            success:false,
-            message:"unable to find stock with minimum wieghts due to db issue"
-        })
-      }
-      if(lowStockItems.length==0){
-        return res.status(201).json({
-            success:false,
-            message:"all items are with required stock"
-        })
-      }
-
-      if(lowStockItems.length>0){
-        return res.status(201).json({
-            success:true,
-            lowStockItems,
-        })
-      }
-     return res.status(201).json({
-        success:true,
-        minimalStockProducts,
-    })
-}
-
-async function findStockOfGivenProduct(req,res){
-    const {productName}=req.body;
-    const stockOfProduct=await Stock.findOne({name:productName});
-    if(stockOfProduct){
-        return res.status(201).json({
-            success:true,
-            stockOfProduct
-        })
-    }else{
-        return res.status(404).json({
-            success:false,
-            message:"unable to find stock of product",
-        })
-    }
-}
-
-async function updateStockOfProducts(req,res){
-    const {products}=req.body;
- 
-    /**
-     * products:[
-     *      {
-     *         name:"badam american",
-     *         weight:100
-     * 
-     *      },...
-     * 
-     * 
-     * ]
-     */
-    if(!products){
-        return res.status(404).json({
-            success:false,
-            message:"please provide products to update stock",
-        })
-    }
+async function findMinimalStock(req, res) {
+  try {
     /*
-    const stockOfAllProducts=await Stock.find({});
-    console.log(stockOfAllProducts)
-    let pointerToProducts=0;
-    let pointerToStocks=0;
-    while(pointerToProducts<products.length){
-        if(products[pointerToProducts].name==stockOfAllProducts[pointerToStocks].name){
-            stockOfAllProducts[pointerToStocks].current_stock=stockOfAllProducts[pointerToStocks].current_stock-products[pointerToProducts].weight;
-            pointerToProducts++;
-        }else{
-            pointerToStocks++;
-        }
-    }
+    await Stock.find({
+      $expr: { $lte: ["$current_stock", "$minimum_stock_signal"] }, // Compare weight and minimum fields
+    });
     */
-    for (const product of products) {
-        // Find the stock item by name and update its weight
-        const updatedStock = await Stock.findOneAndUpdate(
-          { name: product.name }, // Match by name
-          { $inc: { current_stock: -product.weight } }, // Decrease weight
-          { new: true } // Return the updated document
-        );
-        console.log(updatedStock)
-        if (!updatedStock) {
-          return res.status(404).json({
-            success:false,
-            message:"unable to update stock due to db related issue"
-          })
-        } 
-          
-        
+    console.log("he");
+
+    const products = await Stock.find();
+
+    // Filter products with low stock
+    const lowStockItems = products.filter(product => {
+      // Check if main product stock is below minimum
+      if(product.varients=="false"){
+        const isMainProductLow = product.current_stock < product.minimum_stock_signal;
+        return isMainProductLow;
       }
 
+      // Check if any variant's stock is below minimum
+      const isAnyVariantLow = product.product_varients.some(variant =>
+        variant.current_stock < variant.minimum_stock_signal
+      );
+
+      return  isAnyVariantLow;
+    });
+    console.log(lowStockItems);
+    if (!lowStockItems) {
+      console.log("wj");
+      return res.status(404).json({
+        success: false,
+        message: "unable to find stock with minimum wieghts due to db issue",
+      });
+    }
+    if (lowStockItems.length == 0) {
       return res.status(201).json({
-        success:true,
-        message:"updated stock successfully",
-       })
-  
+        success: false,
+        message: "all items are with required stock",
+      });
+    }
+
+    if (lowStockItems.length > 0) {
+      return res.status(201).json({
+        success: true,
+        lowStockItems,
+      });
+    }
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      error,
+    });
+  }
 }
 
-module.exports={
-    findMinimalStock,
-    findStockOfGivenProduct,
-    updateStockOfProducts,
-    addProductToStock
+async function findStockOfGivenProduct(req, res) {
+  const { name } = req.params;
+  const stockOfProduct = await Stock.findOne({ name });
+  if (stockOfProduct) {
+    return res.status(201).json({
+      success: true,
+      stockOfProduct,
+    });
+  } else {
+    return res.status(404).json({
+      success: false,
+      message: "unable to find stock of product",
+    });
+  }
+}
+
+async function updateStockOfProducts(req, res) {
+  /*
+     for (const product of products) {
+    // Find the stock item by name and update its weight
+    const updatedStock = await Stock.findOneAndUpdate(
+      { name: product.name }, // Match by name
+      { $inc: { current_stock: -product.weight } }, // Decrease weight
+      { new: true } // Return the updated document
+    );
+    console.log(updatedStock);
+    if (!updatedStock) {
+      return res.status(404).json({
+        success: false,
+        message: "unable to update stock due to db related issue",
+      });
+    }
+  }
+
+  return res.status(201).json({
+    success: true,
+    message: "updated stock successfully",
+  });
+    */
+
+  try {
+    const { products } = req.body;
+
+    if (!products) {
+      return res.status(404).json({
+        success: false,
+        message: "please provide products to update stock",
+      });
+    }
+
+    for (const item of products) {
+      const { name, weight, quantity } = item;
+
+      // Fetch the product to determine if it has variants
+      const product = await Stock.findOne({ name });
+
+      if (!product) {
+        console.log(`Product ${name} not found.`);
+        continue;
+      }
+
+      if (product.varients == "true" && product.product_varients.length > 0) {
+        // Case 1: Product has variants, deduct stock from all variants equally
+        let varient = product.product_varients.find((item) => {
+          return item.weightOfProduct == weight;
+        });
+        console.log(varient);
+
+        varient.current_stock = varient.current_stock - weight * quantity;
+        await product.save();
+      } else {
+        // Case 2: Product without variants, deduct stock from the main product
+        console.log("without varient");
+        const result = await Stock.updateOne(
+          { name },
+          {
+            $inc: { current_stock: -(weight * quantity) }, // Deduct from main product stock
+          }
+        );
+        console.log(result);
+
+        if (result) {
+          console.log(`Updated stock for product.`);
+        } else {
+          return res.status(404).json({
+            success: false,
+            message: error,
+          });
+        }
+      }
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "stock updated Successfully",
+    });
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      error,
+    });
+  }
+}
+
+async function findTodayStockConsumption(req, res) {
+  try {
+    const { name } = req.params;
+    if (!name) {
+      return res.status(404).json({
+        success: false,
+        message: "please provide name of product",
+      });
+    }
+
+    const product = await Stock.findOne({ name });
+    console.log(product);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "unable to find product",
+      });
+    }
+
+    const NetProductConsumption =
+      product.today_start_stock - product.current_stock;
+
+    return res.status(201).json({
+      success: true,
+      NetProductConsumption,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      error,
+    });
+  }
+}
+
+async function updateTodayStartStock(req, res) {
+  await Stock.updateMany({varients:"false"}, [
+    { $set: { today_start_stock: "$current_stock" } },
+  ]);
+
+  return res.status(201).json({
+    success: true,
+    message: "updated today_start_stock to its initial state",
+  });
 
 }
+
+module.exports = {
+  findMinimalStock,
+  findStockOfGivenProduct,
+  updateStockOfProducts,
+  addProductToStock,
+  findTodayStockConsumption,
+  updateTodayStartStock,
+};

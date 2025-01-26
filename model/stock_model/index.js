@@ -6,8 +6,20 @@ const { Schema } = mongoose;
 const stockSchema = new Schema({
   name: { type: String, required: true },
  
-  current_stock:{type:Number},
-  minimum_stock_signal:{type:Number}
+  current_stock:{type:Number,required:true},
+  minimum_stock_signal:{type:Number,required:true},
+  today_start_stock:{type:Number,required:true},
+  unit:{type:String,required:true},
+  varients:{type:String,required:true},
+  product_varients:[
+    {
+      weightOfProduct:{type:Number,required:true},
+      current_stock:{type:Number,required:true},
+      minimum_stock_signal:{type:Number,required:true},
+   
+      unit:{type:String,required:true},
+    }
+  ]
 });
 
 // Create the model
