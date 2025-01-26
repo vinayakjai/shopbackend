@@ -157,7 +157,12 @@ async function updateStockOfProducts(req, res) {
     }
     
   for (const product of products) {
-    const stock_product=await Stock.findOne({name:product.name})
+    
+    const stock_product=await Stock.findOne({name:product.name});
+    if(!stock_product){
+      console.log("coudnt found product");
+      continue;
+    }
     if (stock_product.varients === "true") {
       // Loop through product variants and update stock
       await Stock.updateOne(
