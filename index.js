@@ -9,7 +9,7 @@ const app=express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(cors({
-    origin:"https://myhomeshopxyz123.netlify.app/"
+    origin:"https://myhomeshopxyz123.netlify.app"
 
 }))
 
