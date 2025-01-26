@@ -53,24 +53,33 @@ async function findMinimalStock(req, res) {
     */
     console.log("he");
 
-    const products = await Stock.find();
+    
+    const products = await Stock.find({}); // Fetch all products
 
-    // Filter products with low stock
-    const lowStockItems = products.filter(product => {
-      // Check if main product stock is below minimum
-      if(product.varients=="false"){
-        const isMainProductLow = product.current_stock < product.minimum_stock_signal;
-        return isMainProductLow;
+    // Filter products based on the criteria
+    const lowStockItems=[];
+    products.map((product)=>{
+      if(product.varients=="true"){
+        product.product_varients.map((varient)=>{
+          if(varient.current_stock<=varient.minimum_stock_signal){
+            lowStockItems.push({
+              name:product.name,
+              current_stock:varient.current_stock,
+              weightOfProduct:varient.weightOfProduct
+            })
+          }
+        })
+      }else{
+        if(product.current_stock<=product.minimum_stock_signal){
+          lowStockItems.push({
+            name:product.name,
+            current_stock:product.current_stock
+
+          })
+        }
       }
-
-      // Check if any variant's stock is below minimum
-      const isAnyVariantLow = product.product_varients.some(variant =>
-        variant.current_stock < variant.minimum_stock_signal
-      );
-
-      return  isAnyVariantLow;
-    });
-    console.log(lowStockItems);
+    })
+    
     if (!lowStockItems) {
       console.log("wj");
       return res.status(404).json({
