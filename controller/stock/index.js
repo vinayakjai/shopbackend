@@ -249,6 +249,14 @@ async function updateTodayStartStock(req, res) {
 
 }
 
+async function getAllStocks(req,res){
+  const product_stocks=await Stock.find({});
+  return res.status(201).json({
+    success:true,
+    product_stocks
+  })
+}
+
 module.exports = {
   findMinimalStock,
   findStockOfGivenProduct,
@@ -256,4 +264,5 @@ module.exports = {
   addProductToStock,
   findTodayStockConsumption,
   updateTodayStartStock,
+  getAllStocks,
 };

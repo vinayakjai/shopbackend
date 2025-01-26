@@ -7,7 +7,7 @@ async function callDb(){
         throw new Error("failde")
        }
     }catch(error){
-       console.log(error)
+       console.log(error.cause)
     }
 }
 //mongodb://localhost:27017/Shop
