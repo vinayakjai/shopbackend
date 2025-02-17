@@ -4,7 +4,8 @@ const bodyParser=require("body-parser");
 const cors=require("cors");
 const router = require("./routes");
 const stockRouter=require("./routes/stock")
-const cartRouter=require("./routes/cart")
+const cartRouter=require("./routes/cart");
+const coldStorageRouter=require("./routes/cold_storage")
 const app=express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended:true}))
@@ -20,6 +21,7 @@ callDb();
 app.use(router);
 app.use('/stock',stockRouter);
 app.use('/cart',cartRouter);
+app.use('/cold',coldStorageRouter)
 app.listen(3100,"0.0.0.0",()=>{
     console.log(`server is listening on http://localhost:${3100}`);
 
