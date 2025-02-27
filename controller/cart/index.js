@@ -23,9 +23,9 @@ async function createCart(req,res){
 }
 async function addToCart(req,res){
     try{
-    const {productName,price,quantity,weight,weightInBill}=req.body;
+    const {productName,price,quantity,weight,weightInBill,tax}=req.body;
     const {name}=req.params;
-    if(!productName,!price,!quantity,!weight || !weightInBill || !name){
+    if(!productName,!price,!quantity,!weight || !weightInBill || !name || !tax){
         return res.status(404).json({
            success:false,
            message:"please provide required information",
@@ -33,7 +33,7 @@ async function addToCart(req,res){
     }
     const cart=await Cart.findOne({name});
     if(cart){
-        cart.items.push({name:productName,price,weight,quantity,weightInBill});
+        cart.items.push({name:productName,price,weight,quantity,weightInBill,tax});
         await cart.save();
         return res.status(201).json({
             success:true,
