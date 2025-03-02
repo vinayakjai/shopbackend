@@ -155,38 +155,39 @@ async function updateStockOfProducts(req, res) {
         message: "please provide products to update stock",
       });
     }
-    
-  for (const product of products) {
-    
-    const stock_product=await Stock.findOne({name:product.name});
-    if(!stock_product){
-      console.log("coudnt found product");
-      continue;
-    }
-    if (stock_product.varients === "true") {
-      // Loop through product variants and update stock
-      await Stock.updateOne(
-        {
-          name: product.name, 
-          "product_varients": { 
-            $elemMatch: { weightOfProduct: product.weight} // Explicitly match the variant by weight
+
+    for (const product of products) {
+      const stock_product = await Stock.findOne({ name: product.name });
+      if (!stock_product) {
+        console.log("coudnt found product");
+        continue;
+      }
+      if (stock_product.varients === "true") {
+        // Loop through product variants and update stock
+        await Stock.updateOne(
+          {
+            name: product.name,
+            product_varients: {
+              $elemMatch: { weightOfProduct: product.weight }, // Explicitly match the variant by weight
+            },
+          },
+          {
+            $inc: {
+              "product_varients.$.current_stock": -(
+                product.weight * product.quantity
+              ),
+            }, // Deduct quantity from the variant's stock
           }
-        },
-        { 
-          $inc: { "product_varients.$.current_stock": -(product.weight*product.quantity) } // Deduct quantity from the variant's stock
-        }
-      );
-    } else {
-      // Update main product's stock
-      await Stock.updateOne(
-        { name: product.name },
-        { $inc: { current_stock: -(product.weight*product.quantity) } }
-      );
+        );
+      } else {
+        // Update main product's stock
+        await Stock.updateOne(
+          { name: product.name },
+          { $inc: { current_stock: -(product.weight * product.quantity) } }
+        );
+      }
     }
-  }
-  
-     
-    
+
     return res.status(201).json({
       success: true,
       message: "stock updated Successfully",
@@ -252,6 +253,68 @@ async function getAllStocks(req, res) {
   });
 }
 
+async function assignStock(req, res) {
+  try {
+    const { name, varients, weightOfProduct, updated_stock_value } = req.body;
+    //console.log(typeof updated_stock_value,varients)
+    if (!name || !varients || !weightOfProduct || !updated_stock_value) {
+      return res.status(404).json({
+        success: false,
+        message: "Please provide all information to server",
+      });
+    }
+    if (varients == "false") {
+      const isProductStockUpdated = await Stock.updateOne(
+        {
+          name,
+        },
+        [{ $set: { current_stock: Number(updated_stock_value) } }]
+      );
+      if (isProductStockUpdated) {
+        return res.status(201).json({
+          success: true,
+          message: "stock updated successfully",
+        });
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "unable to update stock in server",
+        });
+      }
+    } else {
+      const isProductStockUpdated = await Stock.updateOne(
+        {
+          name,
+          "product_varients.weightOfProduct": weightOfProduct,
+        },
+        {
+          $set: {
+            "product_varients.$.current_stock": updated_stock_value,
+            
+          },
+        }
+      );
+
+      if (isProductStockUpdated) {
+        return res.status(201).json({
+          success: true,
+          message: "stock updated successfully",
+        });
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "unable to update stock in server",
+        });
+      }
+    }
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      error,
+    });
+  }
+}
+
 module.exports = {
   findMinimalStock,
   findStockOfGivenProduct,
@@ -260,4 +323,6 @@ module.exports = {
   findTodayStockConsumption,
   updateTodayStartStock,
   getAllStocks,
+  assignStock
+
 };

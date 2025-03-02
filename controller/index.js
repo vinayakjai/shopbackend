@@ -222,28 +222,33 @@ async function addNewWeightItemOgGivenProduct(req, res) {
 
 async function updatePriceOfGivenWeight(req, res) {
   try {
-    const { productName, weight, updatedPrice } = req.body;
-    if (!productName || !weight || !updatedPrice) {
+    const { productName, weight,sodexo_rate, updatedPrice } = req.body;
+    console.log(productName,weight,sodexo_rate,updatedPrice)
+    if (!productName || !weight || !updatedPrice || !sodexo_rate) {
       return res.json({
         message: "please provide required information",
       });
     }
     const isUpdated = await Product.updateOne(
       { name: productName, "info.weight": weight }, // Filter condition
-      { $set: { "info.$.price": updatedPrice } }        // Update operation
+      { $set: { "info.$.price": updatedPrice,"info.$.sodexo_rate": sodexo_rate } }        // Update operation
   );
   console.log(isUpdated)
     if (isUpdated) {
       return res.json({
+        success:true,
         message: `price of product  of weight:${weight} updated successfully`,
       });
     } else {
+
       return res.json({
+        success:false,
         message: `unable to price of product  of weight:${weight} due to database issue`,
       });
     }
   } catch (error) {
     return res.json({
+      success:false,
       message: "unable to update price",
       error,
     });

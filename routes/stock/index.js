@@ -7,6 +7,7 @@ const {
   findTodayStockConsumption,
   updateTodayStartStock,
   getAllStocks,
+  assignStock,
 } = require("../../controller/stock");
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post("/product", addProductToStock);
 router.put("/products", updateStockOfProducts);
 router.get("/product/consumption/:name", findTodayStockConsumption);
 router.put('/stock_pointer',updateTodayStartStock);
-router.get('/',getAllStocks)
+router.get('/',getAllStocks);
+router.put('/assign',assignStock)
 
 module.exports = router;
