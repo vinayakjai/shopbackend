@@ -14,7 +14,7 @@ const productSchema = new Schema({
     },
    
   ],
-  tax:{type:String,required:true},
+  tax:{type:Number,required:true},
   HSN_CODE:{type:String,required:true},
   purchaseRate:{type:String},
   minimum_sell_rate:{type:String}

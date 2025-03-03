@@ -268,9 +268,10 @@ async function assignStock(req, res) {
         {
           name,
         },
-        [{ $set: { current_stock: Number(updated_stock_value) } }]
+        [{ $set: { current_stock: Number(updated_stock_value),today_start_stock:updated_stock_value } }]
       );
       if (isProductStockUpdated) {
+       
         return res.status(201).json({
           success: true,
           message: "stock updated successfully",
