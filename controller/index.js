@@ -105,6 +105,89 @@ async function updateNameOfProduct(req, res) {
   }
 }
 
+
+async function updateTax(req, res) {
+  try {
+    let { tax, productName } = req.body;
+
+    if (!tax || !productName) {
+      return res.json({
+        message: "please provide tax and product name",
+      });
+    }
+    console.log(tax, productName);
+
+    
+   
+      const isUpdated = await Product.updateOne(
+        { name: productName },
+        { $set: { tax } }
+      );
+      console.log(isUpdated);
+      if (isUpdated) {
+        return res.json({
+          success:true,
+          message: "tax of product is updated successfully",
+        });
+      } else {
+        return res.json({
+          success:false,
+          message: "unable to update tax of the product",
+        });
+      }
+    
+    
+  } catch (error) {
+    return res.json({
+      success:false,
+      message: "some error occurred",
+      error,
+    });
+  }
+}
+
+
+
+async function updateHsncode(req, res) {
+  try {
+    let { HSN_CODE, productName } = req.body;
+
+    if (!HSN_CODE || !productName) {
+      return res.json({
+        message: "please provide tax and product name",
+      });
+    }
+    //console.log(purchaseRate, productName);
+
+    
+   
+      const isUpdated = await Product.updateOne(
+        { name: productName },
+        { $set: { HSN_CODE } }
+      );
+      console.log(isUpdated);
+      if (isUpdated) {
+        return res.json({
+          success:true,
+          message: "HSN_CODE of product is updated successfully",
+        });
+      } else {
+        return res.json({
+          success:false,
+          message: "unable to update HSNCODE of the product",
+        });
+      }
+    
+    
+  } catch (error) {
+    return res.json({
+      success:false,
+      message: "some error occurred",
+      error,
+    });
+  }
+}
+
 async function updatePurchaseRate(req, res) {
   try {
     let { purchaseRate, productName } = req.body;
@@ -116,11 +199,8 @@ async function updatePurchaseRate(req, res) {
     }
     console.log(purchaseRate, productName);
 
-    const isProductAvailable = await Product.findOne({ name: productName });
-    if (isProductAvailable) {
-      if (purchaseRate == "null") {
-        purchaseRate = null;
-      }
+    
+   
       const isUpdated = await Product.updateOne(
         { name: productName },
         { $set: { purchaseRate } }
@@ -128,20 +208,20 @@ async function updatePurchaseRate(req, res) {
       console.log(isUpdated);
       if (isUpdated) {
         return res.json({
+          success:true,
           message: "purchase rate of product is updated successfully",
         });
       } else {
         return res.json({
+          success:false,
           message: "unable to update purchase rate of the product",
         });
       }
-    } else {
-      return res.json({
-        message: "Product not available",
-      });
-    }
+    
+    
   } catch (error) {
     return res.json({
+      success:false,
       message: "some error occurred",
       error,
     });
@@ -259,6 +339,8 @@ async function updatePriceOfGivenWeight(req, res) {
 
 
 
+
+
 module.exports = {
   createProduct,
   searchProductInfo,
@@ -269,5 +351,7 @@ module.exports = {
   updateMinimum_Sel_Rate,
   addNewWeightItemOgGivenProduct,
   updatePriceOfGivenWeight,
+  updateTax,
+  updateHsncode,
  
 };
