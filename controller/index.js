@@ -117,11 +117,11 @@ async function updateTax(req, res) {
     }
     console.log(tax, productName);
 
-    
+    const tax_v=Number(tax);
    
       const isUpdated = await Product.updateOne(
         { name: productName },
-        { $set: { tax } }
+        { $set: { tax:tax_v } }
       );
       console.log(isUpdated);
       if (isUpdated) {
