@@ -6,14 +6,21 @@ async function addCustomerInfo(req, res) {
     if (!name || !sodexo) {
       return res.status(404).json({
         success: false,
-        message: "please provide name and sodexo",
+        error: "please provide name and sodexo",
       });
+    }
+    const doesCustomerExists=await CustomerInfo.findOne({name});
+    if(doesCustomerExists){
+      return res.status(404).json({
+        success:false,
+        error:"customer already exists"
+      })
     }
     const addinfo = await CustomerInfo.create(req.body);
     if (!addinfo) {
       return res.status(404).json({
         success: false,
-        message: "unable to add customer info in db",
+        error: "unable to add customer info in db",
       });
     } else {
       return res.status(201).json({
@@ -21,10 +28,11 @@ async function addCustomerInfo(req, res) {
         message: "customer information added successfully",
       });
     }
-  } catch (error) {
+  } catch (err) {
     return res.status(404).json({
       success: false,
-      error,
+      error:"unable to creat customer due to server problem",
+      err
     });
   }
 }
@@ -34,7 +42,7 @@ async function getCustomerInfo(req, res) {
     if (!name) {
       return res.status(404).json({
         success: false,
-        message: "please enter customer name and product name",
+        error: "please enter customer name and product name",
       });
     }
 
@@ -42,7 +50,7 @@ async function getCustomerInfo(req, res) {
     if (!getInfo) {
       return res.status(404).json({
         success: false,
-        message: "unable to fetch customer information from database",
+        error: "customer does not exists",
       });
     } else {
       return res.status(201).json({
@@ -50,10 +58,11 @@ async function getCustomerInfo(req, res) {
         getInfo,
       });
     }
-  } catch (error) {
+  } catch (err) {
     return res.status(404).json({
       success: false,
-      error,
+      error:"unable to get information due to server issue",
+      err
     });
   }
 }
@@ -65,10 +74,16 @@ async function save_customer_info(req, res) {
     if (!name || !customer_products) {
       return res.status(404).json({
         success: false,
-        message: "please provide name and products of customer",
+         error: "please provide name and products of customer",
       });
     }
     let customerInfo = await CustomerInfo.findOne({ name });
+    if(!customerInfo){
+      return res.status(404).json({
+        success:false,
+        error:"customer does not exist,please create entry of customer first then try to save information"
+      })
+    }
     //["kaju 200" "pushp achar"]
     
     if (customerInfo.products.length == 0) {
@@ -100,10 +115,11 @@ async function save_customer_info(req, res) {
         message: "customer information saved successfully",
       });
     }
-  } catch (error) {
+  } catch (err) {
     return res.status(404).json({
       success: false,
-      error,
+      error:"unable to save customer information due to server issue",
+      err
     });
   }
 }
