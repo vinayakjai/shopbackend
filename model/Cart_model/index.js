@@ -13,7 +13,8 @@ const cartSchema = new Schema({
       tax:{type:Number},
       
       quantity:{type:Number,required:true},
-      weightInBill:{type:String,required:true}
+      weightInBill:{type:String,required:true},
+      category:{type:Boolean,required:true}
     },
    
   ],

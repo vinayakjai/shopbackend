@@ -316,6 +316,8 @@ async function assignStock(req, res) {
   }
 }
 
+
+
 module.exports = {
   findMinimalStock,
   findStockOfGivenProduct,
