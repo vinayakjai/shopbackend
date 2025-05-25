@@ -19,6 +19,11 @@ function storeData(req,res,next){
                      { name: dryfruit.name },
                      { $inc: { weight: +(dryfruit.weight) } }
             );
+      });
+
+      return res.status(201).json({
+        success:true,
+        message:"dryfruits data stored successfully"
       })
 
 
