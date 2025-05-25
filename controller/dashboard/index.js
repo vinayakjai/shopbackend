@@ -17,7 +17,7 @@ function storeData(req,res,next){
       dryfruits.map(async (dryfruit)=>{
             await Dryfruits_perday_Info.updateOne(
                      { name: dryfruit.name },
-                     { $inc: { weight: +(dryfruit.weight) } }
+                     { $inc: { weight: +(dryfruit.weight*dryfruit.quantity) } }
             );
       });
 
@@ -44,8 +44,19 @@ async function get_today_sales(req,res,next){
     })
 }
 
-function make_dryfruits_perday_zero(req,res,next){
-    
+async function make_dryfruits_perday_zero(req,res,next){
+    const is_reset=await Dryfruits_perday_Info.updateMany({},{$set:{weight:0}});
+    if(is_reset){
+        return res.status(201).json({
+            success:true,
+            message:"dryfruit sales reset successfully"
+        })
+    }else{
+         return res.status(401).json({
+            success:false,
+            message:"some problem occured"
+        })
+    }
 }
 
 function make_dryfruits_avg_zero(req,res,next){
@@ -55,4 +66,5 @@ function make_dryfruits_avg_zero(req,res,next){
 module.exports={
     storeData,
     get_today_sales,
+    make_dryfruits_perday_zero,
 }
