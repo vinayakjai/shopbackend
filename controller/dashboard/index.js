@@ -3,7 +3,7 @@ const Dryfruits_perday_Info = require("../../model/dryfruits_perday");
 function storeData(req,res,next){
     try{
       const products_in_cart=req.body;
-      console.log("--",products_in_cart)
+      console.log("--",products_in_cart);
       if(!products_in_cart){
         return res.status(404).json({
             success:false,
@@ -26,7 +26,7 @@ function storeData(req,res,next){
         message:"dryfruits data stored successfully"
       })
 
-
+    
 
     }catch(error){
         return res.status(404).json({

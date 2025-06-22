@@ -10,13 +10,14 @@ const productSchema = new Schema({
       price: { type: Number, required: true },
       weight: { type: Number, required: true },
       weightInBill:{type:String,required:true},
-      sodexo_rate:{type:Number,required:true}
+      sodexo_rate:{type:Number,required:true},
+      purchaseRate:{type:Number},
     },
    
   ],
   tax:{type:Number,required:true},
   HSN_CODE:{type:String,required:true},
-  purchaseRate:{type:String},
+  
   minimum_sell_rate:{type:String}
 });
 

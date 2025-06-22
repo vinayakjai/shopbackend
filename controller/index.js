@@ -337,6 +337,45 @@ async function updatePriceOfGivenWeight(req, res) {
 
 
 
+async function updatePurchaseRateOfGivenWeight(req, res) {
+  try {
+    const { productName, weight, updatedPurchaseRate } = req.body;
+    console.log(req.body)
+  
+    if (!productName || !weight || !updatedPurchaseRate) {
+      return res.json({
+        message: "please provide required information",
+      });
+    }
+    const isUpdated = await Product.updateOne(
+      { name: productName, "info.weight": Number(weight) }, // Filter condition
+      { $set: { "info.$.purchaseRate": Number(updatedPurchaseRate)} }        // Update operation
+  );
+  console.log(isUpdated)
+    if (isUpdated) {
+      return res.json({
+        success:true,
+        message: `purchase rate of product  of weight:${weight} updated successfully`,
+      });
+    } else {
+
+      return res.json({
+        success:false,
+        message: `unable to update purchase rate of product  of weight:${weight} due to database issue`,
+      });
+    }
+  } catch (error) {
+    console.log(error)
+    return res.json({
+      success:false,
+      message: "unable to update purchase rate",
+      error,
+    });
+  }
+}
+
+
+
 
 
 
@@ -353,5 +392,6 @@ module.exports = {
   updatePriceOfGivenWeight,
   updateTax,
   updateHsncode,
+  updatePurchaseRateOfGivenWeight,
  
 };

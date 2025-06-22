@@ -23,9 +23,10 @@ async function createCart(req,res){
 }
 async function addToCart(req,res){
     try{
-    const {productName,price,quantity,weight,weightInBill,tax,category}=req.body;
+    const {productName,price,quantity,weight,weightInBill,tax,category,purchase_rate}=req.body;
+    console.log(purchase_rate);
     const {name}=req.params;
-    if(!productName,!price,!quantity,!weight || !weightInBill || !name || !tax){
+    if(!productName,!price,!quantity,!weight || !weightInBill || !name || !tax || !purchase_rate){
         return res.status(404).json({
            success:false,
            message:"please provide required information",
@@ -33,7 +34,7 @@ async function addToCart(req,res){
     }
     const cart=await Cart.findOne({name});
     if(cart){
-        cart.items.push({name:productName,price,weight,quantity,weightInBill,tax,category});
+        cart.items.push({name:productName,price,weight,quantity,weightInBill,tax,category,purchase_rate});
         await cart.save();
         return res.status(201).json({
             success:true,
@@ -41,6 +42,7 @@ async function addToCart(req,res){
         })
     }
     }catch(error){
+        console.log(error)
         return res.json({
             success:false,
             message:"unable to create cart",
@@ -180,10 +182,19 @@ async function getCart(req,res){
     for(i=0;i<cart.items.length;i++){
         totalPrice=totalPrice+(cart.items[i].price*cart.items[i].quantity);
     }
+
+    let total_purchase=0;
+    let length=cart.items.length;
+    
+    for(let i=0;i<cart.items.length;i++){
+        total_purchase=total_purchase+(cart.items[i].purchase_rate*cart.items[i].quantity)
+    }
+    console.log(total_purchase)
     return res.status(201).json({
         success:true,
         totalPrice,
         totalCount,
+        total_purchase,
         items:cart.items,
 
         name:cart.name

@@ -11,6 +11,7 @@ const cartSchema = new Schema({
       price: { type: Number, required: true },
       weight: { type: Number, required: true },
       tax:{type:Number},
+      purchase_rate:{type:Number,required:true},
       
       quantity:{type:Number,required:true},
       weightInBill:{type:String,required:true},
