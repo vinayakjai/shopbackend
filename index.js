@@ -29,7 +29,7 @@ app.use('/cold',coldStorageRouter)
 app.use('/customer',customerRouter)
 app.use('/dashboard',dashboard_router)
 app.listen(3100,"0.0.0.0",()=>{
-    console.log(`server is listening on http://localhost:${3100}`);
+    console.log(`server is listening on http://localhost:${3100}`)
 })
 
 
