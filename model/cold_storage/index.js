@@ -21,6 +21,10 @@ const coldStorageSchema = new mongoose.Schema({
         required: true,
         unique: true,
         trim: true
+    },
+    purchaseRate:{
+        type:String,
+        
     }
 }, { timestamps: true });
 
