@@ -26,12 +26,13 @@ async function addToCart(req,res){
     const {productName,price,quantity,weight,weightInBill,tax,category,purchase_rate}=req.body;
     console.log(purchase_rate);
     const {name}=req.params;
-    if(!productName,!price,!quantity,!weight || !weightInBill || !name || !tax || !purchase_rate){
+    if(!productName || !price || !quantity || !weight || !weightInBill || !name || !Number(tax)  || !purchase_rate){
         return res.status(404).json({
            success:false,
            message:"please provide required information",
         })
     }
+    
     const cart=await Cart.findOne({name});
     if(cart){
         cart.items.push({name:productName,price,weight,quantity,weightInBill,tax,category,purchase_rate});
