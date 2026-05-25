@@ -57,6 +57,7 @@ async function findMinimalStock(req, res) {
 
     // Filter products based on the criteria
     const lowStockItems = [];
+  
     products.map((product) => {
       if (product.varients == "true") {
         product.product_varients.map((varient) => {
@@ -65,6 +66,7 @@ async function findMinimalStock(req, res) {
               name: product.name,
               current_stock: varient.current_stock,
               weightOfProduct: varient.weightOfProduct,
+              
             });
           }
         });

@@ -13,11 +13,11 @@ const app=express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(cors({
-    origin:"https://adminplat.netlify.app"
+    origin:"https://adminplatv2.netlify.app"
 
 }))
 
-//"https://myhomeshopxyz123.netlify.app"
+//"https://adminplat.netlify.app"
 
 
 callDb();
