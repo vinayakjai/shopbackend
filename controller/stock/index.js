@@ -1,5 +1,6 @@
 const Stock = require("../../model/stock_model");
 const schedule = require("node-schedule");
+const products_array = require("../../products.js");
 async function addProductToStock(req, res) {
   const {
     productName,
@@ -46,18 +47,14 @@ async function addProductToStock(req, res) {
 }
 async function findMinimalStock(req, res) {
   try {
-    /*
-    await Stock.find({
-      $expr: { $lte: ["$current_stock", "$minimum_stock_signal"] }, // Compare weight and minimum fields
-    });
-    */
+ 
     console.log("he");
 
     const products = await Stock.find({}); // Fetch all products
 
     // Filter products based on the criteria
     const lowStockItems = [];
-  
+
     products.map((product) => {
       if (product.varients == "true") {
         product.product_varients.map((varient) => {
@@ -66,7 +63,6 @@ async function findMinimalStock(req, res) {
               name: product.name,
               current_stock: varient.current_stock,
               weightOfProduct: varient.weightOfProduct,
-              
             });
           }
         });
@@ -80,24 +76,37 @@ async function findMinimalStock(req, res) {
       }
     });
 
-    if (!lowStockItems) {
+    const lowStockCategoryProducts = lowStockItems.map((item) => {
+      
+      const product = products_array.find((p) => p.name === item.name);
+      console.log("products array",products[1])
+      return {
+        name: item.name,
+        stock: item.current_stock,
+        category: product?.product_category,
+        id:product?._id
+      };
+    });
+
+    if (!lowStockCategoryProducts) {
       console.log("wj");
       return res.status(404).json({
         success: false,
         message: "unable to find stock with minimum wieghts due to db issue",
       });
     }
-    if (lowStockItems.length == 0) {
+    if (lowStockCategoryProducts.length == 0) {
       return res.status(201).json({
         success: false,
         message: "all items are with required stock",
       });
     }
+    console.log(lowStockCategoryProducts);
 
-    if (lowStockItems.length > 0) {
+    if (lowStockCategoryProducts.length > 0) {
       return res.status(201).json({
         success: true,
-        lowStockItems,
+        lowStockCategoryProducts,
       });
     }
   } catch (error) {
@@ -179,13 +188,13 @@ async function updateStockOfProducts(req, res) {
                 product.weight * product.quantity
               ),
             }, // Deduct quantity from the variant's stock
-          }
+          },
         );
       } else {
         // Update main product's stock
         await Stock.updateOne(
           { name: product.name },
-          { $inc: { current_stock: -(product.weight * product.quantity) } }
+          { $inc: { current_stock: -(product.weight * product.quantity) } },
         );
       }
     }
@@ -270,10 +279,16 @@ async function assignStock(req, res) {
         {
           name,
         },
-        [{ $set: { current_stock: Number(updated_stock_value),today_start_stock:updated_stock_value } }]
+        [
+          {
+            $set: {
+              current_stock: Number(updated_stock_value),
+              today_start_stock: updated_stock_value,
+            },
+          },
+        ],
       );
       if (isProductStockUpdated) {
-       
         return res.status(201).json({
           success: true,
           message: "stock updated successfully",
@@ -293,9 +308,8 @@ async function assignStock(req, res) {
         {
           $set: {
             "product_varients.$.current_stock": updated_stock_value,
-            
           },
-        }
+        },
       );
 
       if (isProductStockUpdated) {
@@ -318,8 +332,6 @@ async function assignStock(req, res) {
   }
 }
 
-
-
 module.exports = {
   findMinimalStock,
   findStockOfGivenProduct,
@@ -328,6 +340,5 @@ module.exports = {
   findTodayStockConsumption,
   updateTodayStartStock,
   getAllStocks,
-  assignStock
-
+  assignStock,
 };

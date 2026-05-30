@@ -123,9 +123,32 @@ async function save_customer_info(req, res) {
     });
   }
 }
+async function sendCustomerName(req,res){
+  try{
+    const cus_name=await CustomerInfo.find({});
+    if(!cus_name){
+      return res.status(404).json({
+        success:false,
+        error:"cant find customer name",
+      })
+    }
+    return res.status(201).json({
+      success:true,
+      data:cus_name,
+    })
+
+  }catch(err){
+    return res.status(404).json({
+      success:false,
+      error:"unable to get customer name",
+      err
+    })
+  }
+}
 
 module.exports = {
   addCustomerInfo,
   getCustomerInfo,
   save_customer_info,
+  sendCustomerName,
 };
